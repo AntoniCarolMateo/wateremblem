@@ -2,6 +2,8 @@ import pygame, sys
 from pygame.locals import *
 from Map1 import *
 from Player import *
+from PlayerInfo import *
+from Combat import *
 
 pygame.init()
 
@@ -12,9 +14,14 @@ case  = 0
 
 
 #GENERATING ALIES
-Lyria   = Player('Liria',   'Sprites/lyn.png',    [0,6])
-Pepa = Player('Pepa', "Sprites/lyn.png", [6,0])
-listPLAYERS = [Lyria, Pepa]
+Lyria   = Player('Liria',   'Sprites/lyn.png',    [0,0])
+listPLAYERS = [Lyria]
+
+ezequiel = Player('Ezequiel', 'Sprites/mage.png', [0,6])
+enemies = [ezequiel]
+
+
+combat_log = ""
 
 # First player is default
 PLAYER = listPLAYERS[0]
@@ -27,10 +34,16 @@ new_coord = playerPos
 Cursor = pygame.image.load('Sprites/cursor.png')
 cursorPos = PLAYER.position
 
-
+Debug = True
 #WE BUILD THE SCREEN BASING IN OUR MAP DIMENSIONS
-DISPLAYSURF = pygame.display.set_mode((MAPWIDTH*TILESIZE, MAPHEIGHT*TILESIZE))
 
+if Debug:
+	const = 120
+	INVFONT = pygame.font.SysFont('FreeSans.tff',18)
+else:
+	cont = 0
+
+DISPLAYSURF = pygame.display.set_mode((MAPWIDTH*TILESIZE, MAPHEIGHT*TILESIZE+const))
 
 while True:
 
@@ -50,20 +63,27 @@ while True:
 						PLAYER = player
 						print(player.toString())
 
-
 	#MOVECHARACTERS
 		elif (event.type == KEYDOWN):
 			if (event.key == K_RIGHT):
 				player.move('RIGHT')
+				for enemy in enemies:
+					if enemy.position == player.position:
+						battle = Combat(player, enemy)
+						result = battle.encounter()
+						print(result)
 			elif (event.key ==K_UP):
 				player.move('UP')
 			elif (event.key == K_LEFT):
 				player.move('LEFT')
-
-
-				
-			
-
+			elif (event.key == K_DOWN):
+				player.move('DOWN')
+				for enemy in enemies:
+					if enemy.position == player.position:
+						battle = Combat(player, enemy)
+						combat_log = battle.encounter()
+						print(str(player.hp) + "    " + str(enemy.hp))
+						
 
 
 
@@ -75,5 +95,28 @@ while True:
 	#RENDERING PLAYERS
 	for player in listPLAYERS:
 		DISPLAYSURF.blit(player.sprite,(player.position[0]*TILESIZE,player.position[1]*TILESIZE))
+
+	for enemy in enemies:
+		DISPLAYSURF.blit(enemy.sprite,(enemy.position[0]*TILESIZE,enemy.position[1]*TILESIZE))
+	
+
+
+	if Debug:
+		#player info
+		radius = 40
+		placePosition = 5
+
+		playerImage = pygame.draw.circle(DISPLAYSURF,WHITE,(MAPWIDTH*TILESIZE-radius,0 + radius), radius, 5)
+		
+		Text_Char_Selected= INVFONT.render('Currently Selected: ' + PLAYER.name + '        ', True, WHITE, BLACK)
+		DISPLAYSURF.blit(Text_Char_Selected,(placePosition, MAPHEIGHT*TILESIZE))
+
+		current_terrain = terrains[map[PLAYER.position[1]][PLAYER.position[0]]]
+		Text_Terrain = INVFONT.render('Terrain: ' + str(current_terrain) + (9*'  '), True, WHITE, BLACK)
+		DISPLAYSURF.blit(Text_Terrain,(placePosition, MAPHEIGHT*TILESIZE+10))
+
+		Combat_Log = INVFONT.render(combat_log,True, WHITE, BLACK)
+		DISPLAYSURF.blit(Combat_Log,(placePosition, MAPHEIGHT*TILESIZE+50))
+
 
 	pygame.display.update()

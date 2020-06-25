@@ -11,6 +11,7 @@ class Player:
 		self.sprite = pygame.image.load(image)
 		self.position = position
 		self.facing = 'UP'
+		self.hp = 12
 		self.action_made = False
 
 	#TODO : IMPLEMENTAR TOTS ELS MOVIMENTS
@@ -51,13 +52,13 @@ class Player:
 		elif dir == 'DOWN':
 			self.facing = dir
 			increment = 1
-			new_coord = [self.position[0], self.position[1]-1]
+			new_coord = [self.position[0], self.position[1]+1]
 			if new_coord[1] not in range(MAPHEIGHT):
 				increment = 0
 			else:
 				if new_coord == self.position:
 					increment = 0
-			self.position[1] -= increment
+			self.position[1] += increment
 			self.action_made = True
 
 		
